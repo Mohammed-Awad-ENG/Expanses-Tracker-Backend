@@ -63,12 +63,11 @@ exports.deleteIncome = (req, res) => {
         res.status(500).json({ error: "Server error", error });
     }
 };
-
 exports.downloadIncomeExcel = async (req, res) => {
     try {
         const userId = req.user.id;
         const income = await Income.find({ userId }).sort({ date: -1 });
-        
+
         const data = income.map((item) => ({
             Sources: item.sources,
             Amount: item.amount,
@@ -78,10 +77,14 @@ exports.downloadIncomeExcel = async (req, res) => {
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.json_to_sheet(data);
         XLSX.utils.book_append_sheet(wb, ws, "Incomes");
-        XLSX.writeFile(wb, "incomes.xlsx");
-        res.download("incomes.xlsx");
-        
+
+        const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+
+        res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        res.setHeader("Content-Disposition", 'attachment; filename="incomes.xlsx"');
+        res.send(buf);
+
     } catch (error) {
-        res.status(500).json({ error: "Server error", error });
+        res.status(500).json({ error: "Server error" });
     }
 };
