@@ -10,7 +10,7 @@ const expenseRoutes = require("./routes/expenseRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 app.use(
     cors({
-        origin: process.env.CLIENT_URL || "*",
+        origin: "https://expense-tracker-lake-one-64.vercel.app",
         methods: ["GET", "POST", "PUT", "DELETE"],
         allowedHeaders: ["Content-Type", "Authorization"],
     }),
