@@ -66,9 +66,9 @@ exports.deleteExpense = (req, res) => {
 exports.downloadExpenseExcel = async (req, res) => {
     try {
         const userId = req.user.id;
-        const income = await Income.find({ userId }).sort({ date: -1 });
+        const expenses = await Expense.find({ userId }).sort({ date: -1 });
 
-        const data = income.map((item) => ({
+        const data = expenses.map((item) => ({
             Category: item.category,
             Amount: item.amount,
             Date: item.date,
@@ -76,13 +76,12 @@ exports.downloadExpenseExcel = async (req, res) => {
 
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.json_to_sheet(data);
-        XLSX.utils.book_append_sheet(wb, ws, "Expanses");
+        XLSX.utils.book_append_sheet(wb, ws, "Expenses");
 
-        // ✅ Write to buffer instead of disk
         const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
 
         res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        res.setHeader("Content-Disposition", 'attachment; filename="incomes.xlsx"');
+        res.setHeader("Content-Disposition", 'attachment; filename="expenses.xlsx"');
         res.send(buf);
 
     } catch (error) {
