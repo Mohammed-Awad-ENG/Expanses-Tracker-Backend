@@ -66,20 +66,26 @@ exports.deleteExpense = (req, res) => {
 exports.downloadExpenseExcel = async (req, res) => {
     try {
         const userId = req.user.id;
-        const allExpenses = await Expense.find({ userId }).sort({ date: -1 });
+        const income = await Income.find({ userId }).sort({ date: -1 });
 
-        const data = allExpenses.map((item) => ({
-            category: item.category,
+        const data = income.map((item) => ({
+            Sources: item.sources,
             Amount: item.amount,
             Date: item.date,
         }));
 
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.json_to_sheet(data);
-        XLSX.utils.book_append_sheet(wb, ws, "Expenses");
-        XLSX.writeFile(wb, "expenses.xlsx");
-        res.download("expenses.xlsx");
+        XLSX.utils.book_append_sheet(wb, ws, "Expanses");
+
+        // ✅ Write to buffer instead of disk
+        const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+
+        res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        res.setHeader("Content-Disposition", 'attachment; filename="incomes.xlsx"');
+        res.send(buf);
+
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Server error" });
     }
 };
